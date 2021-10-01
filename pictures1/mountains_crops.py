@@ -130,10 +130,11 @@ def lama(h):
     legs_x = h / 4
     legs_dx = h * 3 / 32
     legs_w = h / 6
+    legs_h = h / 32
     draw_leg(legs_x + legs_dx, legs_y)
     draw_leg(legs_x, legs_y - legs_dy)
-    draw_leg(legs_x + legs_w + legs_dx, legs_y)
-    draw_leg(legs_x + legs_w, legs_y - legs_dy)
+    draw_leg(legs_x + legs_w + legs_dx, legs_y - legs_h)
+    draw_leg(legs_x + legs_w, legs_y - legs_dy - legs_h)
 
     body_x = h * 2 / 9
     body_w = h / 3
