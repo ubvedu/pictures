@@ -41,13 +41,13 @@ def background(w, h):
 
     sf.fill((212, 187, 255))
 
-    hills = f([(0, h * 3 / 8),
-              (w / 3, h * 2 / 7),
-              (w * 3 / 5, h / 7),
-              (w, h / 4)])
+    mountains = f([(0, h * 3 / 8),
+                   (w / 3, h * 2 / 7),
+                   (w * 3 / 5, h / 7),
+                   (w, h / 4)])
     polygon(sf, (141, 141, 141), [(w, h),
-                                  (0, h)] + hills)
-    aalines(sf, (0, 0, 0), False, hills)
+                                  (0, h)] + mountains)
+    aalines(sf, (0, 0, 0), False, mountains)
 
     grass = f([(0, h / 2 - h / 16 - h / 64),
                (w / 4, h / 2 - h / 16 - h / 32),
@@ -151,12 +151,13 @@ def lama(h):
     ellipse(sf, color, (neck_x + n * 0.1, neck_y - n * 0.1, head_w, head_h))
 
     ear_s = n / 32
+
     def draw_ear(x, y):
         polygon(sf, white, [(x, y),
                             (x - ear_s * 3, y - ear_s * 2),
                             (x - ear_s * 5, y - ear_s * 5),
                             (x, y - ear_s * 2)])
-        
+
     draw_ear(neck_x + ear_s * 3, neck_y + ear_s)
     draw_ear(neck_x + ear_s * 6, neck_y + ear_s)
 
