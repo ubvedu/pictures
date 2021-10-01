@@ -1,6 +1,6 @@
 import pygame
 from pygame.draw import *
-from hills_utils import *
+from mountains_crops import *
 from math import sqrt
 
 pygame.init()
