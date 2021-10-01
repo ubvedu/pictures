@@ -12,7 +12,7 @@ screen = pygame.display.set_mode((w, h))
 
 
 screen.blit(background(w, h), (0, 0))
-
+screen.blit(bush(w / 3), (w * 5 / 8, h * 2 / 3))
 # circle(screen, (255, 255, 0), (w / 2, h / 2), w / 4)
 
 
