@@ -1,7 +1,6 @@
 from pygame import Surface
 from pygame.draw import *
 from pygame.transform import rotate
-from random import *
 
 
 # one fractal iteration
