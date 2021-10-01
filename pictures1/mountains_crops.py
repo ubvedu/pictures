@@ -158,8 +158,8 @@ def lama(h):
                             (x - ear_s * 5, y - ear_s * 5),
                             (x, y - ear_s * 2)])
 
-    draw_ear(neck_x + ear_s * 3, neck_y + ear_s)
-    draw_ear(neck_x + ear_s * 6, neck_y + ear_s)
+    draw_ear(neck_x + ear_s * 4, neck_y + ear_s)
+    draw_ear(neck_x + ear_s * 6.5, neck_y + ear_s)
 
     eye_x = neck_x + head_w * 3 / 4
     eye_y = neck_y + head_h / 16
