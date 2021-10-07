@@ -1,0 +1,242 @@
+from pygame import Surface
+from pygame.draw import *
+from pygame.transform import rotate
+
+COLORKEY_BLACK = (0, 0, 0)
+
+DIMMED_WHITE = (246, 242, 255)
+
+DUSK_PURPLE = (212, 187, 255)
+MOUNTAIN_GREY = (141, 141, 141)
+GRASS_GREEN = (66, 190, 101)
+CONTOUR_BLACK = (0, 0, 0)
+
+PETAL_BOUNDARY_GREY = (141, 141, 141)
+CHAMOMILE_YELLOW = (241, 194, 27)
+
+BUSH_GREEN = (111, 220, 140)
+
+EYE_BLUE = (120, 169, 255)
+EYE_BLACK = (22, 22, 22)
+
+
+def scale(points, cx, cy):
+    '''
+    Scales given points to specified size.
+    points - a list of points. Each number should be <= 1
+    x, y - scalars by x and y axes
+    '''
+    return [(x * cx, y * cy) for (x, y) in points]
+
+
+def fractalize(points, symmetric=False):
+    '''
+    Extends a list of points using the fractal algorythm in one iteration
+    points - list of points
+    symmetric - bool. Flips counter-directed fractions if True
+    returns fractalized list of points
+    '''
+    p0 = points[0]
+    w = points[-1][0] - p0[0]
+    h = points[-1][1] - p0[1]
+
+    def insert(p1, p2, x, y):
+
+        if symmetric and (p2[1] - p1[1]) * h < 0:
+            return (p2[0] - x * (p2[0] - p1[0]), p2[1] + y * (p1[1] - p2[1]))
+
+        return (p1[0] + x * (p2[0] - p1[0]), p1[1] + y * (p2[1] - p1[1]))
+
+    new_points = [p0]
+    for i in range(len(points) - 1):
+
+        inner = [insert(
+            points[i],
+            points[i + 1],
+            (p[0] - p0[0]) / w,
+            (p[1] - p0[1]) / h,
+        ) for p in points[1:-1]]
+
+        if symmetric and (points[i + 1][1] - points[i][1]) * h < 0:
+            inner.reverse()
+
+        new_points += inner
+        new_points.append(points[i + 1])
+
+    return new_points
+
+
+def background(w, h):
+    '''
+    Creates a background surface.
+    w, h - width and height of the window
+    returns pygame.Surface
+    '''
+
+    sf = Surface((w, h))
+    sf.fill(DUSK_PURPLE)
+
+    mountains_points = fractalize(scale([(0, 3 / 8),
+                                         (1 / 3, 2 / 7),
+                                         (3 / 5, 1 / 7),
+                                         (1, 1 / 4)], w, h))
+    polygon(sf, MOUNTAIN_GREY, [(w, h), (0, h)] + mountains_points)
+    aalines(sf, CONTOUR_BLACK, False, mountains_points)
+
+    grass_points = fractalize(scale([(0, 1 / 2 - 1 / 16 - 1 / 64),
+                                     (1 / 4, 1 / 2 - 1 / 16 - 1 / 32),
+                                     (3 / 7, 1 / 2 - 1 / 16),
+                                     (5 / 7, 1 / 2 + 1 / 16 - 1 / 32 - 1 / 64),
+                                     (1, 1 / 2 + 1 / 16)], w, h))
+    polygon(sf, GRASS_GREEN, [(w, h), (0, h)] + grass_points)
+    aalines(sf, CONTOUR_BLACK, False, grass_points)
+
+    return sf
+
+
+def flower(d):
+    '''
+    Creates a surface with a chamomile flower
+    d - diameter of a flower
+    returns pygame.Surface
+    '''
+    sf = Surface((d, d))
+    sf.set_colorkey(COLORKEY_BLACK)
+
+    r = d / 2
+    a = r / 3
+    b = a / 1.5
+
+    size = (2 * a, 2 * b)
+
+    def draw_petal(x, y):
+        position = (r - a + x, r - b + y) + size
+        ellipse(sf, DIMMED_WHITE, position)
+        ellipse(sf, PETAL_BOUNDARY_GREY, position, 1)
+
+    def draw_center(x, y):
+        ellipse(sf, CHAMOMILE_YELLOW, (r - a + x, r - b + y) + size)
+
+    draw_petal(0, -b * 3 / 2)
+    draw_petal(-a, -b)
+    draw_petal(+a, -b)
+    draw_petal(-a * 3 / 2, 0)
+
+    draw_center(0, 0)
+
+    draw_petal(+a * 3 / 2, 0)
+    draw_petal(-a, b)
+    draw_petal(+a, b)
+    draw_petal(0, +b * 3 / 2)
+
+    return sf
+
+
+def bush(d):
+    '''
+    Creates a surface with a bush
+    d - diameter of a bush
+    returns pygame.Surface
+    '''
+    sf = Surface((d, d))
+    sf.set_colorkey(COLORKEY_BLACK)
+
+    r = d / 2
+
+    circle(sf, BUSH_GREEN, (r, r), r)
+
+    def draw_flower(scale, angle, ax, ay):
+        sf.blit(rotate(flower(d * scale), angle), (r * ax, r * ay))
+
+    draw_flower(1 / 3, +20, 0.4, 0.1)
+    draw_flower(1 / 3, -30, 0.9, 0.4)
+    draw_flower(1 / 3, +30, 0.3, 0.6)
+    draw_flower(1 / 4, -30, 1.0, 0.0)
+    draw_flower(1 / 4, -30, 0.9, 1.1)
+    draw_flower(1 / 4, +60, 0.0, 0.5)
+    draw_flower(1 / 5, +40, 0.4, 1.2)
+    draw_flower(1 / 5, -90, 1.6, 0.9)
+
+    return sf
+
+
+def lama(h):
+    '''
+    Creates a surface with a lama
+    h - height of the lama
+    returns pygame.Surface
+    '''
+    sf = Surface((h, h))
+    sf.set_colorkey(COLORKEY_BLACK)
+
+    color = DIMMED_WHITE
+
+    def draw_leg(x, y, s):
+        leg_w = s / 4
+        leg_h = s * 0.6
+        ellipse(sf, color, (x - s * 0.1, y, leg_w, leg_h))
+        ellipse(sf, color, (x - s * 0.1, y + s * 0.5, leg_w, leg_h))
+        ellipse(sf, color, (x, y + s, s * 0.3, s * 0.2))
+
+    def draw_body(x, y, w, h):
+        ellipse(sf, color, (x, y, w, h))
+
+    def draw_neck(x, y, w, h):
+        ellipse(sf, color, (x, y, w, h))
+
+    def draw_head(x, y, w, h):
+        ellipse(sf, color, (x, y, w, h))
+
+    def draw_ear(x, y, s):
+        polygon(sf, color, [(x, y),
+                            (x - s * 3, y - s * 2),
+                            (x - s * 5, y - s * 5),
+                            (x, y - s * 2)])
+
+    def draw_eye(x, y, s):
+        circle(sf, EYE_BLUE, (x, y), s)
+        circle(sf, EYE_BLACK, (x + s * 3 / 8, y - s * 3 / 16), s / 2)
+        circle(sf, DIMMED_WHITE, (x + s * 3 / 16, y - s * 3 / 8), s * 3 / 10)
+
+    legs_y = h / 2 + h / 32
+    legs_dy = h / 16
+    legs_x = h / 4
+    legs_dx = h * 3 / 32
+    legs_w = h / 6
+    legs_h = h / 32
+    legs_coords = [
+        (legs_x + legs_dx, legs_y),
+        (legs_x, legs_y - legs_dy),
+        (legs_x + legs_w + legs_dx, legs_y - legs_h),
+        (legs_x + legs_w, legs_y - legs_dy - legs_h),
+    ]
+    for (x, y) in legs_coords:
+        draw_leg(x, y, h / 4)
+
+    body_x = h * 2 / 9
+    body_w = h / 3
+    body_y = h * 2 / 5
+    body_h = h / 5
+    draw_body(body_x, body_y, body_w, body_h)
+
+    neck_s = h / 3
+    neck_x = legs_x + legs_w + neck_s * 0.2
+    neck_y = body_y - neck_s * 0.75
+    draw_neck(neck_x, neck_y, neck_s * 0.3, neck_s)
+
+    head_w = neck_s / 3
+    head_h = neck_s / 4
+    draw_head(neck_x + neck_s * 0.1,
+              neck_y - neck_s * 0.1,
+              head_w,
+              head_h)
+
+    ear_s = neck_s / 32
+    draw_ear(neck_x + ear_s * 4, neck_y + ear_s, ear_s)
+    draw_ear(neck_x + ear_s * 6.5, neck_y + ear_s, ear_s)
+
+    eye_x = neck_x + head_w * 3 / 4
+    eye_y = neck_y + head_h / 16
+    draw_eye(eye_x, eye_y, head_h / 3)
+
+    return sf
