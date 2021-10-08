@@ -3,7 +3,7 @@ import turtle
 turtle.shape('turtle')
 
 radius = 100
-n = 50
+n = 8
 
 for _ in range(n):
     turtle.forward(radius)

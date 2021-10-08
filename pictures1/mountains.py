@@ -6,15 +6,15 @@ from math import sqrt
 pygame.init()
 
 FPS = 30
-h = 600
-w = round(600 / sqrt(2))
+h = 900
+w = round(h // sqrt(2))
 screen = pygame.display.set_mode((w, h))
 
 
 screen.blit(background(w, h), (0, 0))
-screen.blit(bush(w / 3), (w * 5 / 8, h * 2 / 3))
-screen.blit(lama(h / 2), (0, h / 3))
-# circle(screen, (255, 255, 0), (w / 2, h / 2), w / 4)
+screen.blit(bush(w // 3), (w * 5 // 8, h * 2 // 3))
+screen.blit(lama(h // 2), (0, h // 3))
+# circle(screen, (255, 255, 0), (w // 2, h // 2), w // 4)
 
 
 pygame.display.update()

@@ -11,7 +11,7 @@ def read_font(filename):
             return (int(pair[0]), dists[int(pair[1])])
         return [[[format_pair(pair.split(' '))
                   for pair in path.split(',')] if path != '' else []
-                 for path in line.removesuffix('\n').split('|')]
+                 for path in line.rstrip('\n').split('|')]
                 for line in file.readlines()]
 
 
