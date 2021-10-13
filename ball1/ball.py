@@ -12,11 +12,14 @@ CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
-W, H = 1200, 900
+W, H = 1200, 700
 
 NUM_BALLS = 3
 
 FPS = 30
+
+
+font = pygame.font.SysFont(None, 20)
 
 
 def main():
@@ -67,7 +70,8 @@ def update_balls(balls):
             vx *= -1
         if y < r or y > H - r:
             vy *= -1
-        balls[i] = (x + vx, y + vy, r + dr, vx, vy, dr + d2r, d2r) if r + dr > 0 else new_ball()
+        balls[i] = (x + vx, y + vy, r + dr, vx, vy, dr +
+                    d2r, d2r) if r + dr > 0 else new_ball()
 
 
 def draw_ball(sf, ball):
@@ -85,20 +89,31 @@ cx, cy = W / 2, H / 2
 
 
 def handle_click(balls, event):
-    mx, my = event.pos
     scores = []
     for (i, ball) in enumerate(balls):
-        x, y, r = ball[:3]
-        if (x - mx) ** 2 + (y - my) ** 2 < r ** 2:
-            scores.append(round(1000 * sqrt((cx - mx) ** 2 + (cy - my) ** 2) / (pi * r ** 2)))
+        if ball_hit(ball, event.pos):
+            scores.append(ball_score(ball))
             balls[i] = new_ball()
+            balls.append(new_ball)
 
     score = sum(scores) ** len(scores)
     if len(scores) == 1:
         print(f'Good shot! You got {score} points')
     elif len(scores) == 2:
         print(f'Double shot! You got {score} points')
+
     return score
+
+
+def ball_hit(ball, pos):
+    x, y, r = ball[:3]
+    mx, my = pos
+    return (x - mx) ** 2 + (y - my) ** 2 < r ** 2
+
+
+def ball_score(ball):
+    _, _, r = ball[:3]
+    return round(1000 / (pi * r ** 2))
 
 
 main()
