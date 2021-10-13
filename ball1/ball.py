@@ -1,119 +1,47 @@
-import pygame
-from math import pi, sqrt
-from pygame.draw import *
+from math import pi
 from random import randint
-
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
-GREEN = (0, 255, 0)
-MAGENTA = (255, 0, 255)
-CYAN = (0, 255, 255)
-BLACK = (0, 0, 0)
-COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
-
-W, H = 1200, 700
-
-NUM_BALLS = 3
-
-FPS = 30
+import pygame
 
 
-font = pygame.font.SysFont(None, 20)
+class Ball:
+    def __init__(self, x1, y1, x2, y2):
+        self.r = 1
+        self.x = randint(x1, x2)
+        self.y = randint(y1, y2)
+        self.vx = randint(-5, 5)
+        self.vy = randint(-5, 5)
+        self.dr = randint(5, 15)
+        self.d2r = -1
 
+    def draw(self, sf, color):
+        pygame.draw.circle(sf, color, (self.x, self.y), self.r)
 
-def main():
-    pygame.init()
+    def hit(self, pos):
+        x, y = pos
+        return (x - self.x) ** 2 + (y - self.y) ** 2 < self.r ** 2
 
-    screen = pygame.display.set_mode((W, H))
+    def area(self):
+        return pi * self.r ** 2
 
-    pygame.display.update()
-    clock = pygame.time.Clock()
-    finished = False
+    def reflect_box(self, x1, y1, x2, y2):
+        if self.x - self.r < x1:
+            self.x = x1
+            self.vx *= -1
+        if self.x + self.r > x2:
+            self.x = x2 
+            self.vx *= -1
+        if self.y - self.r < y1:
+            self.y = y1
+            self.vy *= -1
+        if self.y + self.r > y2:
+            self.y = y2
+            self.vy *= -1
 
-    balls = [new_ball() for _ in range(NUM_BALLS)]
-    score = 0
+    def step(self):
+        self.x += self.vx
+        self.y += self.vy
+        self.r += self.dr
+        self.dr += self.d2r
 
-    while not finished:
-        clock.tick(FPS)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                finished = True
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                score += handle_click(balls, event)
-
-        update_balls(balls)
-        draw_balls(screen, balls)
-
-        pygame.display.update()
-        screen.fill(BLACK)
-
-    pygame.quit()
-    print(f'Congratulations! Your score is {score}')
-
-
-def new_ball():
-    r = 1
-    x = randint(0, W)
-    y = randint(0, H)
-    vx = randint(-5, 5)
-    vy = randint(-5, 5)
-    dr = randint(NUM_BALLS * 2, NUM_BALLS * 5)
-    d2r = -1
-    return x, y, r, vx, vy, dr, d2r
-
-
-def update_balls(balls):
-    for (i, (x, y, r, vx, vy, dr, d2r)) in enumerate(balls):
-        if x < r or x > W - r:
-            vx *= -1
-        if y < r or y > H - r:
-            vy *= -1
-        balls[i] = (x + vx, y + vy, r + dr, vx, vy, dr +
-                    d2r, d2r) if r + dr > 0 else new_ball()
-
-
-def draw_ball(sf, ball):
-    x, y, r = ball[:3]
-    color = COLORS[randint(0, 5)]
-    circle(sf, color, (x, y), r)
-
-
-def draw_balls(sf, balls):
-    for ball in balls:
-        draw_ball(sf, ball)
-
-
-cx, cy = W / 2, H / 2
-
-
-def handle_click(balls, event):
-    scores = []
-    for (i, ball) in enumerate(balls):
-        if ball_hit(ball, event.pos):
-            scores.append(ball_score(ball))
-            balls[i] = new_ball()
-            balls.append(new_ball)
-
-    score = sum(scores) ** len(scores)
-    if len(scores) == 1:
-        print(f'Good shot! You got {score} points')
-    elif len(scores) == 2:
-        print(f'Double shot! You got {score} points')
-
-    return score
-
-
-def ball_hit(ball, pos):
-    x, y, r = ball[:3]
-    mx, my = pos
-    return (x - mx) ** 2 + (y - my) ** 2 < r ** 2
-
-
-def ball_score(ball):
-    _, _, r = ball[:3]
-    return round(1000 / (pi * r ** 2))
-
-
-main()
+    def exists(self):
+        return self.r > 0
