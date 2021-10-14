@@ -4,21 +4,23 @@ import pygame
 
 
 class Ball:
-    def __init__(self, x1, y1, x2, y2):
+    def __init__(self, color, x1, y1, x2, y2):
+        self.color = color
         self.r = 1
         self.x = randint(x1, x2)
         self.y = randint(y1, y2)
-        self.vx = randint(-5, 5)
-        self.vy = randint(-5, 5)
-        self.dr = randint(5, 15)
+        v_max = 10
+        self.vx = randint(-v_max, v_max)
+        self.vy = randint(-v_max, v_max)
+        self.dr = randint(8, 16)
         self.d2r = -1
 
-    def draw(self, sf, color):
-        pygame.draw.circle(sf, color, (self.x, self.y), self.r)
+    def draw(self, sf):
+        pygame.draw.circle(sf, self.color, (self.x, self.y), self.r)
 
-    def hit(self, pos):
-        x, y = pos
-        return (x - self.x) ** 2 + (y - self.y) ** 2 < self.r ** 2
+    def dist_squared(self, point):
+        x, y = point
+        return (x - self.x) ** 2 + (y - self.y) ** 2
 
     def area(self):
         return pi * self.r ** 2
