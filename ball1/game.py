@@ -32,8 +32,6 @@ ALL_COLORS = COLORS + LIGHT_COLORS
 
 W, H = 1200, 700
 
-NUM_BALLS = 3
-
 FPS = 30
 
 bg_colors = [BLACK, WHITE]
@@ -44,6 +42,7 @@ class Game:
     def __init__(self):
         self.update_bg_color()
         self.score_loss = 3
+        self.num_balls = 3
 
     def update_bg_color(self, prev=None):
         self.bg = random_bg_color(prev)
@@ -54,22 +53,18 @@ class Game:
         pygame.font.init()
 
         self.screen = pygame.display.set_mode((W, H), pygame.RESIZABLE)
+        self.font32 = pygame.font.SysFont(None, 32)
 
         pygame.display.update()
         clock = pygame.time.Clock()
         finished = False
 
-        self.balls = [new_ball() for _ in range(NUM_BALLS)]
-        self.max_score = 1000
-        self.score = self.max_score
-        game_over = False
-
-        start = time.time()
+        self.begin_game()
 
         while not finished:
             clock.tick(FPS)
 
-            if not game_over:
+            if not self.game_over:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         finished = True
@@ -79,26 +74,35 @@ class Game:
                 self.draw_scene()
                 self.score -= self.score_loss
                 if self.score < 0:
-                    game_over = True
-                    self.end_game(start, pygame.font.SysFont(None, 32))
+                    self.end_game()
             else:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         finished = True
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        self.begin_game()
 
             pygame.display.update()
 
         pygame.quit()
 
-    def end_game(self, start, font):
-        duration = time.time() - start
-        text = font.render(f'Game over. Your played {int(duration)}s',
-                            True,
-                            self.bg_inverse)
-        clip = text.get_clip()
-        self.screen.blit(text,
-                            ((W - clip.w) / 2, (H - clip.h) / 2))
+    def begin_game(self):
+        self.balls = [new_ball() for _ in range(self.num_balls)]
+        self.max_score = 1000
+        self.score = self.max_score
+        self.game_over = False
+        self.start = time.time()
 
+    def end_game(self):
+        self.game_over = True
+        duration = time.time() - self.start
+        text = self.font32.render(
+            f'Game over. Your played {round(duration, 3)}s',
+            True,
+            self.bg_inverse,
+        )
+        clip = text.get_clip()
+        self.screen.blit(text, ((W - clip.w) / 2, (H - clip.h) / 2))
 
     def update_balls(self):
         for (i, ball) in enumerate(self.balls):
