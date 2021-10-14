@@ -1,9 +1,10 @@
 import math
+from turtle import st
 import pygame
-from random import randint
 import random
 from ball import Ball
 from sys import float_info
+import time
 
 BLACK = (22, 22, 22)
 WHITE = (244, 244, 244)
@@ -41,38 +42,63 @@ fg_colors = LIGHT_COLORS
 
 class Game:
     def __init__(self):
-        self.bg = random_bg_color()
+        self.update_bg_color()
+        self.score_loss = 3
+
+    def update_bg_color(self, prev=None):
+        self.bg = random_bg_color(prev)
+        self.bg_inverse = random_bg_color(self.bg)
 
     def loop(self):
         pygame.init()
         pygame.font.init()
 
         self.screen = pygame.display.set_mode((W, H), pygame.RESIZABLE)
-        self.font = pygame.font.SysFont(None, 24)
 
         pygame.display.update()
         clock = pygame.time.Clock()
         finished = False
 
         self.balls = [new_ball() for _ in range(NUM_BALLS)]
-        self.score = 0
+        self.max_score = 1000
+        self.score = self.max_score
+        game_over = False
+
+        start = time.time()
 
         while not finished:
             clock.tick(FPS)
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    finished = True
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handle_click(event)
-
-            self.update_balls()
-            self.draw_scene()
+            if not game_over:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        finished = True
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        self.handle_click(event)
+                self.update_balls()
+                self.draw_scene()
+                self.score -= self.score_loss
+                if self.score < 0:
+                    game_over = True
+                    self.end_game(start, pygame.font.SysFont(None, 32))
+            else:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        finished = True
 
             pygame.display.update()
 
         pygame.quit()
-        print(f'Congratulations! Your score is {self.score}')
+
+    def end_game(self, start, font):
+        duration = time.time() - start
+        text = font.render(f'Game over. Your played {int(duration)}s',
+                            True,
+                            self.bg_inverse)
+        clip = text.get_clip()
+        self.screen.blit(text,
+                            ((W - clip.w) / 2, (H - clip.h) / 2))
+
 
     def update_balls(self):
         for (i, ball) in enumerate(self.balls):
@@ -84,6 +110,7 @@ class Game:
         self.screen.fill(self.bg)
         for ball in self.balls:
             ball.draw(self.screen)
+        self.draw_bar()
 
     def handle_click(self, event):
         add_scores = []
@@ -97,19 +124,36 @@ class Game:
                 nearest_dist_squared = dist_squared
 
         if len(add_scores) > 0:
-            add_score = round((W * H * sum(add_scores)) *len(add_scores))
+            add_score = W * H * sum(add_scores) * len(add_scores)
         else:
-            self.bg = random_bg_color(self.bg)
-            add_score = -round(W * H / (math.pi * nearest_dist_squared))
+            self.update_bg_color(self.bg)
+            add_score = -W * H / (math.pi * nearest_dist_squared)
 
-        if len(add_scores) == 0:
-            print(f'Miss! You lost {-add_score} points')
-        if len(add_scores) == 1:
-            print(f'Good shot! You got {add_score} points')
-        elif len(add_scores) == 2:
-            print(f'Double shot! You got {add_score} points')
+        self.score = min(self.score + add_score, self.max_score)
 
-        self.score += add_score
+    def draw_bar(self):
+        fg = self.bg_inverse
+
+        screen_w = self.screen.get_clip().w
+        pad_lr = screen_w / 4
+        pad_t = 16
+        h = 24
+        border_w = 2
+        pygame.draw.rect(self.screen, fg, (
+            pad_lr,
+            pad_t,
+            screen_w - 2 * pad_lr,
+            h,
+        ), border_w)
+
+        inset_w = border_w + 1
+        pygame.draw.rect(self.screen, fg, (
+            pad_lr + inset_w,
+            pad_t + inset_w,
+            int((screen_w - 2 * (pad_lr + inset_w))
+                * min(self.score / self.max_score, 1)),
+            h - inset_w - border_w,
+        ))
 
 
 def random_near_color(i, j):
